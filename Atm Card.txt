@@ -1,0 +1,149 @@
+#include <iostream>
+#include <fstream> // file me data save krne ke lye library add ki
+#include <string>
+
+using namespace std;
+
+struct User {
+    string name;
+    string pin;
+    double balance;
+};
+
+const string filename = "accounts.txt";
+
+void displayMenu() {
+    cout << "\nATM Card Application\n";
+    cout << "1. Create a new account\n";
+    cout << "2. Login\n";
+    cout << "3. Exit\n";
+    cout << "Enter your choice: ";
+}
+
+void createAccount() {
+    ofstream outFile(filename, ios::app);
+    
+    User newUser;
+    
+    cout << "Enter your name: ";
+// ignore buffer line yani new line ko remove krta hai
+    cin.ignore();
+    getline(cin, newUser.name);// yaha full name le skte with space
+    
+    cout << "Create a 4-digit PIN: ";
+    cin >> newUser.pin;
+
+    newUser.balance = 0.0;
+
+    outFile << newUser.name << " " << newUser.pin << " " << newUser.balance << endl; // write user information in file
+
+    outFile.close();// then file close data save here
+
+    cout << "Account created successfully!\n";
+}
+
+User loginUser() {
+    ifstream inFile(filename); // Get Data from file like account.txt
+    
+    User loggedInUser;
+    
+    string enteredName, enteredPIN;
+    
+    cout << "Enter your name: ";
+    cin.ignore(); //same
+    getline(cin, enteredName);
+
+    cout << "Enter your 4-digit PIN: ";
+    cin >> enteredPIN;
+
+    bool userFound = false;
+// checking data in file
+    while (inFile >> loggedInUser.name >> loggedInUser.pin >> loggedInUser.balance) {
+        if (loggedInUser.name == enteredName && loggedInUser.pin == enteredPIN) {
+            userFound = true;
+            break;
+        }
+    }
+
+    inFile.close();//file close
+
+    if (!userFound) {
+        cout << "Invalid credentials. Exiting.\n";
+        exit(0);
+    }
+
+    return loggedInUser;
+}
+// paramater me &sign direct data changing me help krte hai
+void performTransactions(User &loggedInUser) {
+    int choice;
+    do {
+        cout << "\nATM Transactions:\n";
+        cout << "1. Check Balance\n";
+        cout << "2. Withdraw Money\n";
+        cout << "3. Deposit Money\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Your current balance: $" << loggedInUser.balance << endl;
+                break;
+            case 2:
+                double withdrawAmount;
+                cout << "Enter the amount to withdraw: $";
+                cin >> withdrawAmount;
+                if (withdrawAmount > 0 && withdrawAmount <= loggedInUser.balance) {
+                    loggedInUser.balance -= withdrawAmount;
+                    cout << "Withdrawal successful. Remaining balance: $" << loggedInUser.balance << endl;
+                } else {
+                    cout << "Invalid amount or insufficient balance.\n";
+                }
+                break;
+            case 3:
+                double depositAmount;
+                cout << "Enter the amount to deposit: $";
+                cin >> depositAmount;
+                if (depositAmount > 0) {
+                    loggedInUser.balance += depositAmount;
+                    cout << "Deposit successful. New balance: $" << loggedInUser.balance << endl;
+                } else {
+                    cout << "Invalid amount.\n";
+                }
+                break;
+            case 4:
+                cout << "Exiting ATM transactions. Thank you!\n";
+                break;
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+    } while (choice != 4);
+}
+
+int main() {
+    int option;
+    User loggedInUser;
+
+    do {
+        displayMenu();
+        cin >> option;
+
+        switch (option) {
+            case 1:
+                createAccount();
+                break;
+            case 2:
+                loggedInUser = loginUser();
+                performTransactions(loggedInUser);
+                break;
+            case 3:
+                cout << "Exiting the ATM application. Goodbye!\n";
+                break;
+            default:
+                cout << "Invalid option. Try again.\n";
+        }
+    } while (option != 3);
+
+    return 0;
+}

@@ -1,0 +1,237 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+struct User {
+    string username;
+    string password;
+    string pin;
+    bool hasCard;
+    double balance;
+
+    User() : hasCard(false), balance(0.0) {}
+};
+
+vector<User> users;
+
+void registerUser() {
+    User newUser;
+    cout << "Enter a username: ";
+    cin >> newUser.username;
+
+    // Check if the username is already taken
+    for (const auto &user : users) {
+        if (user.username == newUser.username) {
+            cout << "Username already taken. Please choose another username.\n";
+            return;
+        }
+    }
+
+    cout << "Enter a password: ";
+    cin >> newUser.password;
+
+    users.push_back(newUser);
+    cout << "Registration successful!\n";
+}
+
+bool loginUser(User &loggedInUser) {
+    string username, password;
+    cout << "Enter your username: ";
+    cin >> username;
+
+    cout << "Enter your password: ";
+    cin >> password;
+
+    for (auto &user : users) {
+        if (user.username == username && user.password == password) {
+            cout << "Login successful!\n";
+            loggedInUser = user;
+            return true;
+        }
+    }
+
+    cout << "Login failed. Invalid username or password.\n";
+    return false;
+}
+
+void createATMCard(User &loggedInUser) {
+    cout << "Creating ATM card for " << loggedInUser.username << ".\n";
+    cout << "Enter your PIN number: ";
+    cin >> loggedInUser.pin;
+    loggedInUser.hasCard = true;
+    cout << "ATM card created successfully!\n";
+}
+
+void checkBalance(User &loggedInUser) {
+    if (loggedInUser.hasCard) {
+        cout << "Your current balance: $" << loggedInUser.balance << "\n";
+    } else {
+        cout << "ATM card not created. Please create an ATM card first.\n";
+    }
+}
+
+void withdrawCash(User &loggedInUser) {
+    if (loggedInUser.hasCard) {
+        double amount;
+        cout << "Enter the amount to withdraw: $";
+        cin >> amount;
+
+        if (amount > 0 && amount <= loggedInUser.balance) {
+            loggedInUser.balance -= amount;
+            cout << "Withdrawal successful. Remaining balance: $" << loggedInUser.balance << "\n";
+        } else {
+            cout << "Invalid amount or insufficient balance.\n";
+        }
+    } else {
+        cout << "ATM card not created. Please create an ATM card first.\n";
+    }
+}
+
+void depositCash(User &loggedInUser) {
+    if (loggedInUser.hasCard) {
+        double amount;
+        cout << "Enter the amount to deposit: $";
+        cin >> amount;
+
+        if (amount > 0) {
+            loggedInUser.balance += amount;
+            cout << "Deposit successful. New balance: $" << loggedInUser.balance << "\n";
+        } else {
+            cout << "Invalid amount.\n";
+        }
+    } else {
+        cout << "ATM card not created. Please create an ATM card first.\n";
+    }
+}
+
+void fastCash(User &loggedInUser) {
+    if (loggedInUser.hasCard) {
+        cout << "Select fast cash amount:\n";
+        cout << "1. $500\n2. $1000\n3. $5000\n4. $10000\n5. $15000\n6. $20000\n7. $25000\n";
+        
+        int fastCashChoice;
+        cout << "Enter your choice: ";
+        cin >> fastCashChoice;
+
+        double amount;
+
+        switch (fastCashChoice) {
+            case 1:
+                amount = 500;
+                break;
+            case 2:
+                amount = 1000;
+                break;
+            case 3:
+                amount = 5000;
+                break;
+            case 4:
+                amount = 10000;
+                break;
+            case 5:
+                amount = 15000;
+                break;
+            case 6:
+                amount = 20000;
+                break;
+            case 7:
+                amount = 25000;
+                break;
+            default:
+                cout << "Invalid choice. Exiting fast cash.\n";
+                return;
+        }
+
+        if (amount <= loggedInUser.balance) {
+            loggedInUser.balance -= amount;
+            cout << "Fast Cash withdrawal successful. Remaining balance: $" << loggedInUser.balance << "\n";
+        } else {
+            cout << "Insufficient balance for Fast Cash withdrawal.\n";
+        }
+    } else {
+        cout << "ATM card not created. Please create an ATM card first.\n";
+    }
+}
+
+void performATMTransactions(User &loggedInUser) {
+    if (loggedInUser.hasCard) {
+        cout << "Enter your PIN number: ";
+        string enteredPin;
+        cin >> enteredPin;
+
+        if (enteredPin == loggedInUser.pin) {
+            int transactionChoice;
+            do {
+                cout << "\nATM Transactions:\n";
+                cout << "1. Check Balance\n2. Withdraw Cash\n3. Deposit Cash\n4. Fast Cash\n5. Exit\n";
+                cout << "Enter your choice: ";
+                cin >> transactionChoice;
+
+                switch (transactionChoice) {
+                    case 1:
+                        checkBalance(loggedInUser);
+                        break;
+                    case 2:
+                        withdrawCash(loggedInUser);
+                        break;
+                    case 3:
+                        depositCash(loggedInUser);
+                        break;
+                    case 4:
+                        fastCash(loggedInUser);
+                        break;
+                    case 5:
+                        cout << "Exiting ATM transactions. Thank you!\n";
+                        break;
+                    default:
+                        cout << "Invalid choice. Try again.\n";
+                }
+            } while (transactionChoice != 5);
+        } else {
+            cout << "Incorrect PIN. Exiting.\n";
+        }
+    } else {
+        cout << "ATM card not created. Please create an ATM card first.\n";
+    }
+}
+
+int main() {
+    int choice;
+    User loggedInUser;
+
+    do {
+        cout << "1. Register\n2. Login\n3. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                registerUser();
+                break;
+            case 2:
+                if (loginUser(loggedInUser)) {
+                    if (!loggedInUser.hasCard) {
+                        cout << "Do you have an ATM card? (y/n): ";
+                        char hasATMCard;
+                        cin >> hasATMCard;
+
+                        if (hasATMCard == 'y' || hasATMCard == 'Y') {
+                            createATMCard(loggedInUser);
+                        }
+                    }
+
+                    performATMTransactions(loggedInUser);
+                }
+                break;
+            case 3:
+                cout << "Exiting program. Goodbye!\n";
+                break;
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+    } while (choice != 3);
+
+    return 0;
+}
